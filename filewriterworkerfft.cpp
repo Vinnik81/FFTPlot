@@ -11,29 +11,6 @@ using std::vector;
 FileWriterWorkerFFT::FileWriterWorkerFFT(const QString &dataFileName, QObject *parent) : QObject(parent)
 {
     m_pValues = new QMap<double, double>;
-
-    const double FS = 48000.0; //32768.0;
-    const double T = 1.0; //1.0;
-    double A = 1000.0;
-    double F = 80.0;
-    double A2 = 1600;
-    double F2 = 5000;
-    int n = (FS * T);
-    vector<double> inputreal;
-    vector<double> inputimag;
-//    double t = m_pTime->elapsed() / 1000.0; // время в секундах
-    for (int i = 0; i < n; ++i) {
-        double t = (i/FS);
-        inputreal.push_back(A * qCos(2 * M_PI * F * t) + A2 * qCos(2 * M_PI * F2 * t));
-        inputimag.push_back(A * qSin(2 * M_PI * F * t) + A2 * qSin(2 * M_PI * F2 * t));
-    }
-    Fft::transform(inputreal, inputimag);
-    //int freq
-    QVector<double> freqx = linspace(0, FS - 1, n);
-    for (int i = 0; i < n; ++i) {
-
-        m_pValues->insert(freqx[i], inputreal[i] / n);
-    }
 }
 
 FileWriterWorkerFFT::~FileWriterWorkerFFT()
@@ -61,6 +38,43 @@ void FileWriterWorkerFFT::printPlot()
             qDebug() << i << value;
         }
     }
+}
+
+void FileWriterWorkerFFT::FFT(double fs, double t, double a, double f)
+{
+//    const double FS = 48000.0; //32768.0;
+//    const double T = 1.0; //1.0;
+//    double A = 10.0;
+//    double F = 80.0;
+    signal.clear();
+    m_pValues->clear();
+    int n = (fs * t);
+    vector<double> inputreal;
+    vector<double> inputimag;
+//    double t = m_pTime->elapsed() / 1000.0; // время в секундах
+    for (int i = 0; i < n; ++i) {
+        double ts = (i/fs);
+        inputreal.push_back(a * qCos(2 * M_PI * f * ts));
+        inputimag.push_back(a * qSin(2 * M_PI * f * ts));
+        signal.push_back(inputreal[i]);
+    }
+    Fft::transform(inputreal, inputimag);
+    //int freq
+    QVector<double> freqx = linspace(0, fs - 1, n);
+    for (int i = 0; i < n; ++i) {
+
+        m_pValues->insert(freqx[i], inputreal[i] / n);
+    }
+}
+
+QMap<double, double> *FileWriterWorkerFFT::pValues() const
+{
+    return m_pValues;
+}
+
+const QVector<double> &FileWriterWorkerFFT::getSignal() const
+{
+    return signal;
 }
 
 QVector<double> FileWriterWorkerFFT::linspace(double start, double end, int n) {
