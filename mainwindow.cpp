@@ -86,12 +86,11 @@ void MainWindow::generate()
     double f = lineEditF->text().toDouble();
     worker->FFT(fs, lineEditT->text().toDouble(), lineEditA->text().toDouble(), f);
 
-    int s = (ceil(fs/f) + 1) * 2;
+    int s = ceil(fs/f) * 2 + 1;
     QVector<double> x(s), y0(s);
     int j = 0;
     for (double i : worker->pValues()->keys()) {
-        double value = (*worker->pValues())[i];
-        x.push_back(i);
+        x.push_back(j / fs);
         y0.push_back(worker->getSignal()[j++]);
         if (j >= s) {
             break;
@@ -104,15 +103,13 @@ void MainWindow::generate()
     customPlotSignal->replot();
     // same thing for graph 1, but only enlarge ranges (in case graph 1 is smaller than graph 0):
     // Note: we could have also just called customPlot->rescaleAxes(); instead
-    int k = 0;
-    int ss = (ceil(f) + 1) * 2;
+    int ss = ceil(f) * 2;
     QVector<double> x1(ss), y1(ss);
     for (double i : worker->pValues()->keys()) {
         double value = (*worker->pValues())[i];
         x1.push_back(i);
         y1.push_back(value);
-        k++;
-        if (k >= ss) {
+        if (i >= ss) {
             break;
         }
         qDebug() << i << value;
