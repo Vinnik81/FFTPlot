@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     QVBoxLayout *l = new QVBoxLayout();
     ui->centralwidget->setLayout(l);
-    l->addWidget(customPlotSignal);
+
 
     QHBoxLayout *lh = new QHBoxLayout();
     labelFs = new QLabel(this);
@@ -29,6 +29,10 @@ MainWindow::MainWindow(QWidget *parent)
     labelF = new QLabel(this);
     labelF->setText("f: ");
     lineEditF = new QLineEdit("80.0", this);
+    labelScale = new QLabel(this);
+    labelScale->setText("Scale: ");
+    lineEditScale = new QLineEdit(this);
+    lineEditScale->setText("100");
 
     generateButton = new QPushButton(this);
     generateButton->setText("Generate");
@@ -36,7 +40,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(generateButton, &QPushButton::clicked, this, &MainWindow::generate);
 
     customPlotSpectrum = createPlot();
-    l->addWidget(customPlotSpectrum);
+    l->addItem(lh);
+    l->addWidget(generateButton);
     lh->addWidget(labelFs);
     lh->addWidget(lineEditFs);
     lh->addWidget(labelT);
@@ -45,9 +50,10 @@ MainWindow::MainWindow(QWidget *parent)
     lh->addWidget(lineEditA);
     lh->addWidget(labelF);
     lh->addWidget(lineEditF);
-    l->addItem(lh);
-    l->addWidget(generateButton);
-
+    lh->addWidget(labelScale);
+    lh->addWidget(lineEditScale);
+    l->addWidget(customPlotSignal);
+    l->addWidget(customPlotSpectrum);
 }
 
 MainWindow::~MainWindow()
@@ -84,18 +90,19 @@ void MainWindow::generate()
 {
     double fs = lineEditFs->text().toDouble();
     double f = lineEditF->text().toDouble();
-    worker->FFT(fs, lineEditT->text().toDouble(), lineEditA->text().toDouble(), f);
+    double t =  lineEditT->text().toDouble();
+    double scale = lineEditScale->text().toDouble() / 100.0;
+    worker->FFT(fs, t, lineEditA->text().toDouble(), f);
 
-    int s = ceil(fs/f) * 2 + 1;
+//    int s = ceil(fs/f) * 2 + 1;
+    int s = ceil(fs * scale);
     QVector<double> x(s), y0(s);
-    int j = 0;
-    for (double i : worker->pValues()->keys()) {
-        x.push_back(j / fs);
-        y0.push_back(worker->getSignal()[j++]);
-        if (j >= s) {
-            break;
+    for (int j = 0; j < s; ++j) {
+        double ts = j / fs;
+        x[j] = ts;
+        y0[j] = worker->getSignal()[j];
+
 //            qDebug() << i << value;
-        }
     }
     customPlotSignal->graph(0)->setData(x, y0);
     // let the ranges scale themselves so graph 0 fits perfectly in the visible area:
@@ -105,14 +112,14 @@ void MainWindow::generate()
     // Note: we could have also just called customPlot->rescaleAxes(); instead
     int ss = ceil(f) * 2;
     QVector<double> x1(ss), y1(ss);
-    for (double i : worker->pValues()->keys()) {
-        double value = (*worker->pValues())[i];
-        x1.push_back(i);
-        y1.push_back(value);
+    for (int i = 0; i < worker->pValues()->size(); ++i) {
         if (i >= ss) {
             break;
         }
-        qDebug() << i << value;
+        double value = (*worker->pValues())[i].y();
+        x1[i] = (*worker->pValues())[i].x();
+        y1[i] = value;
+//        qDebug() << i << value;
 
     }
 

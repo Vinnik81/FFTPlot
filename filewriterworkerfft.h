@@ -15,12 +15,12 @@ public:
     void printPlot();
     void FFT(double fs, double t, double a, double f);
 
-    QMap<double, double> *pValues() const;
+    QVector<QPointF> *pValues() const;
 
     const QVector<double> &getSignal() const;
 
 private:
-    QMap<double, double> *m_pValues;
+    QVector<QPointF> *m_pValues;
     int m_step;
     QVector<double> signal;
 

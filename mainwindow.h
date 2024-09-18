@@ -26,10 +26,12 @@ private:
     QLabel *labelT;
     QLabel *labelA;
     QLabel *labelF;
+    QLabel *labelScale;
     QLineEdit *lineEditFs;
     QLineEdit *lineEditT;
     QLineEdit *lineEditA;
     QLineEdit *lineEditF;
+    QLineEdit *lineEditScale;
     QPushButton *generateButton;
     FileWriterWorkerFFT * worker;
 

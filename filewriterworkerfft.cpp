@@ -5,12 +5,13 @@
 #include <QTime>
 #include <QDataStream>
 #include <QDebug>
+#include <QPointF>
 
 using std::vector;
 
 FileWriterWorkerFFT::FileWriterWorkerFFT(const QString &dataFileName, QObject *parent) : QObject(parent)
 {
-    m_pValues = new QMap<double, double>;
+    m_pValues = new QVector<QPointF>;
 }
 
 FileWriterWorkerFFT::~FileWriterWorkerFFT()
@@ -24,7 +25,7 @@ double FileWriterWorkerFFT::funcPlot(double time)
         return 0.0; // или какое-то другое значение по умолчанию
     }
 
-    double value = m_pValues->value(m_step, 0.0);
+    double value = (*m_pValues)[m_step].y();
     m_step = (m_step + 1) % m_pValues->size();
     //qDebug() << qMax(abs(value), 0.1);
     return qMax(abs(log10(abs(value))), 100.0);
@@ -32,8 +33,8 @@ double FileWriterWorkerFFT::funcPlot(double time)
 
 void FileWriterWorkerFFT::printPlot()
 {
-    for (double i : m_pValues->keys()) {
-        double value = (*m_pValues)[i];
+    for (int i = 0; i < m_pValues->size(); ++i) {
+        double value = (*m_pValues)[i].y();
         if (value > 100) {
             qDebug() << i << value;
         }
@@ -48,26 +49,28 @@ void FileWriterWorkerFFT::FFT(double fs, double t, double a, double f)
 //    double F = 80.0;
     signal.clear();
     m_pValues->clear();
-    int n = (fs * t);
-    vector<double> inputreal;
-    vector<double> inputimag;
+    int n = ceil(fs * t);
+    m_pValues->resize(n);
+    signal.resize(n);
+    vector<double> inputreal(n);
+    vector<double> inputimag(n);
 //    double t = m_pTime->elapsed() / 1000.0; // время в секундах
     for (int i = 0; i < n; ++i) {
         double ts = (i/fs);
-        inputreal.push_back(a * qCos(2 * M_PI * f * ts));
-        inputimag.push_back(a * qSin(2 * M_PI * f * ts));
-        signal.push_back(inputreal[i]);
+        inputreal[i] = a * qCos(2 * M_PI * f * ts);
+        inputimag[i] = a * qSin(2 * M_PI * f * ts);
+        signal[i] = inputreal[i];
     }
     Fft::transform(inputreal, inputimag);
     //int freq
     QVector<double> freqx = linspace(0, fs - 1, n);
     for (int i = 0; i < n; ++i) {
 
-        m_pValues->insert(freqx[i], inputreal[i] / n);
+        (*m_pValues)[i] = QPointF(freqx[i], inputreal[i] / n);
     }
 }
 
-QMap<double, double> *FileWriterWorkerFFT::pValues() const
+QVector<QPointF> *FileWriterWorkerFFT::pValues() const
 {
     return m_pValues;
 }
