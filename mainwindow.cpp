@@ -32,6 +32,12 @@ MainWindow::MainWindow(QWidget *parent)
     labelF = new QLabel(this);
     labelF->setText("f: ");
     lineEditF = new QLineEdit("80.0", this);
+    labelA2 = new QLabel(this);
+    labelA2->setText("a2: ");
+    lineEditA2 = new QLineEdit("30.0", this);
+    labelF2 = new QLabel(this);
+    labelF2->setText("f2: ");
+    lineEditF2 = new QLineEdit("180.0", this);
     labelScale = new QLabel(this);
     labelScale->setText("Scale: ");
     lineEditScale = new QLineEdit(this);
@@ -52,8 +58,12 @@ MainWindow::MainWindow(QWidget *parent)
     lh->addWidget(lineEditT);
     lh->addWidget(labelA);
     lh->addWidget(lineEditA);
+    lh->addWidget(labelA2);
+    lh->addWidget(lineEditA2);
     lh->addWidget(labelF);
     lh->addWidget(lineEditF);
+    lh->addWidget(labelF2);
+    lh->addWidget(lineEditF2);
     lh->addWidget(labelScale);
     lh->addWidget(lineEditScale);
     l->addWidget(customPlotSignal);
@@ -95,10 +105,13 @@ void MainWindow::generate()
 {
     double fs = lineEditFs->text().toDouble();
     double f = lineEditF->text().toDouble();
+    double f2 = lineEditF2->text().toDouble();
     double t =  lineEditT->text().toDouble();
     double scale = lineEditScale->text().toDouble() / 100.0;
     signalFunction->setA(lineEditA->text().toDouble());
     signalFunction->setF(f);
+    static_cast<SignalFunctionSum*>(signalFunction)->setA2(lineEditA2->text().toDouble());
+     static_cast<SignalFunctionSum*>(signalFunction)->setF2(f2);
     worker->FFT(fs, t);
     double freqMax = worker->getFreqMax();
 
