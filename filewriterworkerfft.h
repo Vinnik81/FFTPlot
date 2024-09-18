@@ -1,30 +1,45 @@
 #ifndef FILEWRITERWORKERFFT_H
 #define FILEWRITERWORKERFFT_H
 
+#include "filewriterworker.h"
+
 #include <QObject>
 #include <QVector>
 
+class SignalFunction;
 
 
-class FileWriterWorkerFFT: public QObject
+class FileWriterWorkerFFT: public FileWriterWorker
 {
 public:
-    explicit FileWriterWorkerFFT(const QString &dataFileName, QObject *parent = Q_NULLPTR);
+    static constexpr double VALUE_THRESHOLD = 0.1;
+
+    explicit FileWriterWorkerFFT(const SignalFunction *signalFunction, const QString &dataFileName, QObject *parent = Q_NULLPTR);
     virtual ~FileWriterWorkerFFT();
-    double funcPlot(double time);
+    virtual double funcPlot(double time);
     void printPlot();
-    void FFT(double fs, double t, double a, double f);
+    void FFT(double fs, double t);
 
-    QVector<QPointF> *pValues() const;
-
+    const QVector<QPointF> &vibroAcceleration() const;
+    const QVector<QPointF> &vibroVelocity() const;
     const QVector<double> &getSignal() const;
 
+    double getFreqMax() const;
+
 private:
-    QVector<QPointF> *m_pValues;
-    int m_step;
+    const SignalFunction *m_pSignalFunction;
+    QVector<QPointF> *m_pVibroAcceleration;
     QVector<double> signal;
+    double freqMax;
+    double accelerationFreq;
+    double accelerationMax;
 
     QVector<double> linspace(double start, double end, int n);
+
+protected:
+    double velocityMax;
+    QVector<QPointF> *m_pVibroVelocity;
+    double velocityFreq;
 };
 
 #endif // FILEWRITERWORKERFFT_H

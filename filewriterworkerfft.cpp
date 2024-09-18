@@ -6,78 +6,108 @@
 #include <QDataStream>
 #include <QDebug>
 #include <QPointF>
+#include "signalfunction.h"
 
 using std::vector;
 
-FileWriterWorkerFFT::FileWriterWorkerFFT(const QString &dataFileName, QObject *parent) : QObject(parent)
+FileWriterWorkerFFT::FileWriterWorkerFFT(const SignalFunction *signalFunction, const QString &dataFileName, QObject *parent) : FileWriterWorker(dataFileName, parent)
 {
-    m_pValues = new QVector<QPointF>;
+    m_pSignalFunction = signalFunction;
+    m_pVibroAcceleration = new QVector<QPointF>;
+    m_pVibroVelocity = new QVector<QPointF>;
 }
 
 FileWriterWorkerFFT::~FileWriterWorkerFFT()
 {
-    delete m_pValues;
+    delete m_pVibroAcceleration;
+    delete m_pVibroVelocity;
 }
 
 double FileWriterWorkerFFT::funcPlot(double time)
 {
-    if (m_pValues->isEmpty()) {
+    if (m_pVibroAcceleration->isEmpty()) {
         return 0.0; // или какое-то другое значение по умолчанию
     }
 
-    double value = (*m_pValues)[m_step].y();
-    m_step = (m_step + 1) % m_pValues->size();
-    //qDebug() << qMax(abs(value), 0.1);
-    return qMax(abs(log10(abs(value))), 100.0);
+    return accelerationMax;
 }
 
 void FileWriterWorkerFFT::printPlot()
 {
-    for (int i = 0; i < m_pValues->size(); ++i) {
-        double value = (*m_pValues)[i].y();
+    for (int i = 0; i < m_pVibroAcceleration->size(); ++i) {
+        double value = (*m_pVibroAcceleration)[i].y();
         if (value > 100) {
             qDebug() << i << value;
         }
     }
 }
 
-void FileWriterWorkerFFT::FFT(double fs, double t, double a, double f)
+void FileWriterWorkerFFT::FFT(double fs, double t)
 {
 //    const double FS = 48000.0; //32768.0;
 //    const double T = 1.0; //1.0;
 //    double A = 10.0;
 //    double F = 80.0;
+    freqMax = 0.0;
+    accelerationMax = 0.0;
+    velocityMax = 0.0;
     signal.clear();
-    m_pValues->clear();
+    m_pVibroAcceleration->clear();
+    m_pVibroVelocity->clear();
     int n = ceil(fs * t);
-    m_pValues->resize(n);
+    m_pVibroAcceleration->resize(n);
+    m_pVibroVelocity->resize(n);
     signal.resize(n);
     vector<double> inputreal(n);
     vector<double> inputimag(n);
 //    double t = m_pTime->elapsed() / 1000.0; // время в секундах
     for (int i = 0; i < n; ++i) {
         double ts = (i/fs);
-        inputreal[i] = a * qCos(2 * M_PI * f * ts);
-        inputimag[i] = a * qSin(2 * M_PI * f * ts);
+        QPointF func = m_pSignalFunction->function(ts);
+        inputreal[i] = func.x();
+        inputimag[i] = func.y();
         signal[i] = inputreal[i];
     }
     Fft::transform(inputreal, inputimag);
     //int freq
     QVector<double> freqx = linspace(0, fs - 1, n);
     for (int i = 0; i < n; ++i) {
-
-        (*m_pValues)[i] = QPointF(freqx[i], inputreal[i] / n);
+        double value = inputreal[i] / n;
+        double vibroVelocity = value / (2 * M_PI * freqx[i]);
+        if (value > VALUE_THRESHOLD) {
+            freqMax = freqx[i];
+            if (value > accelerationMax) {
+                accelerationFreq = freqx[i];
+                accelerationMax = value;
+            }
+            if (vibroVelocity > velocityMax) {
+                velocityFreq = freqx[i];
+                velocityMax = vibroVelocity;
+            }
+        }
+        (*m_pVibroAcceleration)[i] = QPointF(freqx[i], value);
+        (*m_pVibroVelocity)[i] = QPointF(freqx[i], vibroVelocity);
     }
 }
 
-QVector<QPointF> *FileWriterWorkerFFT::pValues() const
+const QVector<QPointF> &FileWriterWorkerFFT::vibroAcceleration() const
 {
-    return m_pValues;
+    return (*m_pVibroAcceleration);
 }
 
 const QVector<double> &FileWriterWorkerFFT::getSignal() const
 {
     return signal;
+}
+
+double FileWriterWorkerFFT::getFreqMax() const
+{
+    return freqMax;
+}
+
+const QVector<QPointF> &FileWriterWorkerFFT::vibroVelocity() const
+{
+    return (*m_pVibroVelocity);
 }
 
 QVector<double> FileWriterWorkerFFT::linspace(double start, double end, int n) {

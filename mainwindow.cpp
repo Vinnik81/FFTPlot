@@ -1,5 +1,7 @@
 #include "filewriterworkerfft.h"
 #include "mainwindow.h"
+#include "signalfunction.h"
+#include "signalfunctionsum.h"
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -7,7 +9,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    worker = new FileWriterWorkerFFT("testFFT.dat", this);
+    signalFunction = new SignalFunctionSum();
+    worker = new FileWriterWorkerFFT(signalFunction, "testFFT.dat", this);
     //worker->printPlot();
     customPlotSignal = createPlot();
 
@@ -40,6 +43,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(generateButton, &QPushButton::clicked, this, &MainWindow::generate);
 
     customPlotSpectrum = createPlot();
+    vibroVelocity = createPlot();
     l->addItem(lh);
     l->addWidget(generateButton);
     lh->addWidget(labelFs);
@@ -54,6 +58,7 @@ MainWindow::MainWindow(QWidget *parent)
     lh->addWidget(lineEditScale);
     l->addWidget(customPlotSignal);
     l->addWidget(customPlotSpectrum);
+    l->addWidget(vibroVelocity);
 }
 
 MainWindow::~MainWindow()
@@ -92,7 +97,10 @@ void MainWindow::generate()
     double f = lineEditF->text().toDouble();
     double t =  lineEditT->text().toDouble();
     double scale = lineEditScale->text().toDouble() / 100.0;
-    worker->FFT(fs, t, lineEditA->text().toDouble(), f);
+    signalFunction->setA(lineEditA->text().toDouble());
+    signalFunction->setF(f);
+    worker->FFT(fs, t);
+    double freqMax = worker->getFreqMax();
 
 //    int s = ceil(fs/f) * 2 + 1;
     int s = ceil(fs * scale);
@@ -110,15 +118,16 @@ void MainWindow::generate()
     customPlotSignal->replot();
     // same thing for graph 1, but only enlarge ranges (in case graph 1 is smaller than graph 0):
     // Note: we could have also just called customPlot->rescaleAxes(); instead
-    int ss = ceil(f) * 2;
-    QVector<double> x1(ss), y1(ss);
-    for (int i = 0; i < worker->pValues()->size(); ++i) {
-        if (i >= ss) {
-            break;
-        }
-        double value = (*worker->pValues())[i].y();
-        x1[i] = (*worker->pValues())[i].x();
+    int ss = ceil(freqMax) * 2;
+    QVector<double> x1(ss), y1(ss), y2(ss);
+    for (int i = 0; i < ss; ++i) {
+//        if (i >= ss) {
+//            break;
+//        }
+        double value = worker->vibroAcceleration()[i].y();
+        x1[i] = worker->vibroAcceleration()[i].x();
         y1[i] = value;
+        y2[i] = worker->vibroVelocity()[i].y();
 //        qDebug() << i << value;
 
     }
@@ -126,6 +135,10 @@ void MainWindow::generate()
     customPlotSpectrum->graph(0)->setData(x1, y1);
     // let the ranges scale themselves so graph 0 fits perfectly in the visible area:
     customPlotSpectrum->graph(0)->rescaleAxes();
+   vibroVelocity->graph(0)->setData(x1, y2);
+    // let the ranges scale themselves so graph 0 fits perfectly in the visible area:
+    vibroVelocity->graph(0)->rescaleAxes();
     customPlotSpectrum->replot();
+    vibroVelocity->replot();
 }
 

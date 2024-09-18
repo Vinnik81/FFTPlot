@@ -7,6 +7,8 @@
 QT_BEGIN_NAMESPACE
 
 class FileWriterWorkerFFT;
+
+class SignalFunction;
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
@@ -22,6 +24,7 @@ private:
     Ui::MainWindow *ui;
     QCustomPlot *customPlotSignal;
     QCustomPlot *customPlotSpectrum;
+    QCustomPlot *vibroVelocity;
     QLabel *labelFs;
     QLabel *labelT;
     QLabel *labelA;
@@ -34,6 +37,7 @@ private:
     QLineEdit *lineEditScale;
     QPushButton *generateButton;
     FileWriterWorkerFFT * worker;
+    SignalFunction *signalFunction;
 
     QCustomPlot *createPlot();
     void generate();

@@ -9,9 +9,13 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    filewriterworker.cpp \
     filewriterworkerfft.cpp \
+    filewriterworkervelocity.cpp \
     main.cpp \
     mainwindow.cpp \
+    signalfunction.cpp \
+    signalfunctionsum.cpp \
     thirdparty/FFT/FftComplex.cpp \
     thirdparty/FFT/FftComplexTest.cpp \
     thirdparty/FFT/FftRealPair.cpp \
@@ -19,8 +23,12 @@ SOURCES += \
     thirdparty/qcustomplot/qcustomplot.cpp
 
 HEADERS += \
+    filewriterworker.h \
     filewriterworkerfft.h \
+    filewriterworkervelocity.h \
     mainwindow.h \
+    signalfunction.h \
+    signalfunctionsum.h \
     thirdparty/FFT/FftComplex.hpp \
     thirdparty/FFT/FftRealPair.hpp \
     thirdparty/qcustomplot/qcustomplot.h
