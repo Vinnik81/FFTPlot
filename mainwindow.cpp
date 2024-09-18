@@ -118,14 +118,16 @@ void MainWindow::generate()
     customPlotSignal->replot();
     // same thing for graph 1, but only enlarge ranges (in case graph 1 is smaller than graph 0):
     // Note: we could have also just called customPlot->rescaleAxes(); instead
-    int ss = ceil(freqMax) * 2;
+    double freqMax2 = ceil(freqMax) * 2;
+    int ss = worker->vibroAcceleration().size();
     QVector<double> x1(ss), y1(ss), y2(ss);
     for (int i = 0; i < ss; ++i) {
-//        if (i >= ss) {
-//            break;
-//        }
-        double value = worker->vibroAcceleration()[i].y();
         x1[i] = worker->vibroAcceleration()[i].x();
+        if (x1[i] > freqMax2) {
+            break;
+        }
+        double value = worker->vibroAcceleration()[i].y();
+
         y1[i] = value;
         y2[i] = worker->vibroVelocity()[i].y();
 //        qDebug() << i << value;
