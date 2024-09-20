@@ -23,7 +23,7 @@ public:
     const QVector<QPointF> &vibroAcceleration() const;
     const QVector<QPointF> &vibroVelocity() const;
     const QVector<double> &getSignal() const;
-
+    const QVector<QPointF> &vibroDisplacement() const;
     double getFreqMax() const;
 
 private:
@@ -40,6 +40,9 @@ protected:
     double velocityMax;
     QVector<QPointF> *m_pVibroVelocity;
     double velocityFreq;
+    double displacementMax;
+    QVector<QPointF> *m_pDisplacement;
+    double displacementFreq;
 };
 
 #endif // FILEWRITERWORKERFFT_H

@@ -15,12 +15,14 @@ FileWriterWorkerFFT::FileWriterWorkerFFT(const SignalFunction *signalFunction, c
     m_pSignalFunction = signalFunction;
     m_pVibroAcceleration = new QVector<QPointF>;
     m_pVibroVelocity = new QVector<QPointF>;
+    m_pDisplacement = new QVector<QPointF>;
 }
 
 FileWriterWorkerFFT::~FileWriterWorkerFFT()
 {
     delete m_pVibroAcceleration;
     delete m_pVibroVelocity;
+    delete  m_pDisplacement;
 }
 
 double FileWriterWorkerFFT::funcPlot(double time)
@@ -51,12 +53,15 @@ void FileWriterWorkerFFT::FFT(double fs, double t)
     freqMax = 0.0;
     accelerationMax = 0.0;
     velocityMax = 0.0;
+    displacementMax = 0.0;
     signal.clear();
     m_pVibroAcceleration->clear();
     m_pVibroVelocity->clear();
+    m_pDisplacement->clear();
     int n = ceil(fs * t);
     m_pVibroAcceleration->resize(n);
     m_pVibroVelocity->resize(n);
+    m_pDisplacement->resize(n);
     signal.resize(n);
     vector<double> inputreal(n);
     vector<double> inputimag(n);
@@ -73,7 +78,8 @@ void FileWriterWorkerFFT::FFT(double fs, double t)
     QVector<double> freqx = linspace(0, fs - 1, n);
     for (int i = 0; i < n; ++i) {
         double value = inputreal[i] / n;
-        double vibroVelocity = value / (2 * M_PI * freqx[i]);
+        double vibroVelocity = freqx[i] > 0.0 ? value / (2 * M_PI * freqx[i]) : 0;
+        double vibroDisplacement = freqx[i] > 0.0 ? vibroVelocity / (2 * M_PI * freqx[i]) : 0;
         if (value > VALUE_THRESHOLD) {
             freqMax = freqx[i];
             if (value > accelerationMax) {
@@ -84,9 +90,14 @@ void FileWriterWorkerFFT::FFT(double fs, double t)
                 velocityFreq = freqx[i];
                 velocityMax = vibroVelocity;
             }
+            if (vibroDisplacement > displacementMax) {
+                displacementFreq = freqx[i];
+                displacementMax = vibroDisplacement;
+            }
         }
         (*m_pVibroAcceleration)[i] = QPointF(freqx[i], value);
         (*m_pVibroVelocity)[i] = QPointF(freqx[i], vibroVelocity);
+        (*m_pDisplacement)[i] = QPointF(freqx[i], vibroDisplacement);
     }
 }
 
@@ -110,6 +121,11 @@ const QVector<QPointF> &FileWriterWorkerFFT::vibroVelocity() const
     return (*m_pVibroVelocity);
 }
 
+const QVector<QPointF> &FileWriterWorkerFFT::vibroDisplacement() const
+{
+    return (*m_pDisplacement);
+}
+
 QVector<double> FileWriterWorkerFFT::linspace(double start, double end, int n) {
     QVector<double> result;
 
@@ -127,3 +143,5 @@ QVector<double> FileWriterWorkerFFT::linspace(double start, double end, int n) {
 
     return result;
 }
+
+

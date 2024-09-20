@@ -10,12 +10,14 @@ CONFIG += c++11
 
 SOURCES += \
     filewriterworker.cpp \
+    filewriterworkerdisplacement.cpp \
     filewriterworkerfft.cpp \
     filewriterworkervelocity.cpp \
     main.cpp \
     mainwindow.cpp \
     signalfunction.cpp \
     signalfunctionsum.cpp \
+    signalwindow.cpp \
     thirdparty/FFT/FftComplex.cpp \
     thirdparty/FFT/FftComplexTest.cpp \
     thirdparty/FFT/FftRealPair.cpp \
@@ -24,11 +26,13 @@ SOURCES += \
 
 HEADERS += \
     filewriterworker.h \
+    filewriterworkerdisplacement.h \
     filewriterworkerfft.h \
     filewriterworkervelocity.h \
     mainwindow.h \
     signalfunction.h \
     signalfunctionsum.h \
+    signalwindow.h \
     thirdparty/FFT/FftComplex.hpp \
     thirdparty/FFT/FftRealPair.hpp \
     thirdparty/qcustomplot/qcustomplot.h
