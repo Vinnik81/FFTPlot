@@ -10,7 +10,7 @@
 
 using std::vector;
 
-FileWriterWorkerFFT::FileWriterWorkerFFT(const SignalFunction *signalFunction, const QString &dataFileName, QObject *parent) : FileWriterWorker(dataFileName, parent)
+FileWriterWorkerFFT::FileWriterWorkerFFT(SignalFunction *signalFunction, const QString &dataFileName, QObject *parent) : FileWriterWorker(dataFileName, parent)
 {
     m_pSignalFunction = signalFunction;
     m_pVibroAcceleration = new QVector<QPointF>;
@@ -116,6 +116,16 @@ double FileWriterWorkerFFT::getFreqMax() const
     return freqMax;
 }
 
+SignalFunction *FileWriterWorkerFFT::signalFunction() const
+{
+    return m_pSignalFunction;
+}
+
+double FileWriterWorkerFFT::getAccelerationMax() const
+{
+    return accelerationMax;
+}
+
 const QVector<QPointF> &FileWriterWorkerFFT::vibroVelocity() const
 {
     return (*m_pVibroVelocity);
@@ -142,6 +152,31 @@ QVector<double> FileWriterWorkerFFT::linspace(double start, double end, int n) {
     }
 
     return result;
+}
+
+double FileWriterWorkerFFT::getDisplacementFreq() const
+{
+    return displacementFreq;
+}
+
+double FileWriterWorkerFFT::getVelocityFreq() const
+{
+    return velocityFreq;
+}
+
+double FileWriterWorkerFFT::getDisplacementMax() const
+{
+    return displacementMax;
+}
+
+double FileWriterWorkerFFT::getAccelerationFreq() const
+{
+    return accelerationFreq;
+}
+
+double FileWriterWorkerFFT::getVelocityMax() const
+{
+    return velocityMax;
 }
 
 

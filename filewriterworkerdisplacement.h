@@ -6,7 +6,7 @@
 class FileWriterWorkerDisplacement : public FileWriterWorkerFFT
 {
 public:
-    explicit FileWriterWorkerDisplacement(const SignalFunction *signalFunction, const QString &dataFileName, QObject *parent = nullptr);
+    explicit FileWriterWorkerDisplacement(SignalFunction *signalFunction, const QString &dataFileName, QObject *parent = nullptr);
     virtual double funcPlot(double time);
 };
 

@@ -14,7 +14,7 @@ class FileWriterWorkerFFT: public FileWriterWorker
 public:
     static constexpr double VALUE_THRESHOLD = 0.1;
 
-    explicit FileWriterWorkerFFT(const SignalFunction *signalFunction, const QString &dataFileName, QObject *parent = Q_NULLPTR);
+    explicit FileWriterWorkerFFT(SignalFunction *signalFunction, const QString &dataFileName, QObject *parent = Q_NULLPTR);
     virtual ~FileWriterWorkerFFT();
     virtual double funcPlot(double time);
     void printPlot();
@@ -26,8 +26,22 @@ public:
     const QVector<QPointF> &vibroDisplacement() const;
     double getFreqMax() const;
 
+    SignalFunction *signalFunction() const;
+
+    double getAccelerationMax() const;
+
+    double getVelocityMax() const;
+
+    double getDisplacementMax() const;
+
+    double getAccelerationFreq() const;
+
+    double getVelocityFreq() const;
+
+    double getDisplacementFreq() const;
+
 private:
-    const SignalFunction *m_pSignalFunction;
+    SignalFunction *m_pSignalFunction;
     QVector<QPointF> *m_pVibroAcceleration;
     QVector<double> signal;
     double freqMax;

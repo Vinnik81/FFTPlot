@@ -6,7 +6,7 @@
 class FileWriterWorkerVelocity : public FileWriterWorkerFFT
 {
 public:
-    explicit FileWriterWorkerVelocity(const SignalFunction *signalFunction, const QString &dataFileName, QObject *parent = nullptr);
+    explicit FileWriterWorkerVelocity(SignalFunction *signalFunction, const QString &dataFileName, QObject *parent = nullptr);
     virtual double funcPlot(double time);
 };
 

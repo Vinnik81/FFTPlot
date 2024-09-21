@@ -1,6 +1,6 @@
 #include "filewriterworkervelocity.h"
 
-FileWriterWorkerVelocity::FileWriterWorkerVelocity(const SignalFunction *signalFunction, const QString &dataFileName, QObject *parent)
+FileWriterWorkerVelocity::FileWriterWorkerVelocity(SignalFunction *signalFunction, const QString &dataFileName, QObject *parent)
     : FileWriterWorkerFFT(signalFunction, dataFileName, parent)
 {
 
@@ -12,5 +12,5 @@ double FileWriterWorkerVelocity::funcPlot(double time)
         return 0.0; // или какое-то другое значение по умолчанию
     }
 
-    return velocityMax;
+    return velocityMax * 1000;
 }
